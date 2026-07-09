@@ -1,0 +1,3 @@
+python-telegram-bot==22.2
+sympy==1.14.0
+psycopg2-binary
