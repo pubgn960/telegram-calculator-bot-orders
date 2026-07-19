@@ -84,23 +84,22 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         )
 
         cache.add(key)
-
-        try:
-            await message.set_reaction("👍")
-        except TelegramError:
-            logger.exception(
-                "Reaction failed (for example, unsupported chat or missing permission) chat_id=%s chat_type=%s message_id=%s",
-                chat.id,
-                chat.type,
-                message.message_id,
-            )
-
         logger.info(
             "Forward successful chat_id=%s message_id=%s -> order_group_id=%s",
             chat.id,
             message.message_id,
             settings.order_group_id,
         )
+
+        try:
+            await message.set_reaction("👍")
+        except TelegramError:
+            logger.exception(
+                "Failed to set reaction chat_id=%s chat_type=%s message_id=%s",
+                chat.id,
+                chat.type,
+                message.message_id,
+            )
     except Exception as exc:  # noqa: BLE001
         logger.exception(
             "Forward failed chat_id=%s message_id=%s error=%s",
