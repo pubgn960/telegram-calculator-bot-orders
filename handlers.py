@@ -83,6 +83,8 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             message_id=message.message_id,
         )
 
+        cache.add(key)
+
         try:
             await message.set_reaction("👍")
         except TelegramError:
@@ -93,7 +95,6 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 message.message_id,
             )
 
-        cache.add(key)
         logger.info(
             "Forward successful chat_id=%s message_id=%s -> order_group_id=%s",
             chat.id,
