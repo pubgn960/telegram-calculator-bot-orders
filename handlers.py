@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 from telegram import Update
+from telegram.error import TelegramError
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 from config import settings
@@ -89,6 +90,16 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             message.message_id,
             settings.order_group_id,
         )
+
+        try:
+            await message.set_reaction("👍")
+        except TelegramError:
+            logger.exception(
+                "Failed to set reaction chat_id=%s chat_type=%s message_id=%s",
+                chat.id,
+                chat.type,
+                message.message_id,
+            )
     except Exception as exc:  # noqa: BLE001
         logger.exception(
             "Forward failed chat_id=%s message_id=%s error=%s",
