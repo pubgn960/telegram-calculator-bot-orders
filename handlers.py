@@ -89,7 +89,7 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             await message.set_reaction("👍")
         except TelegramError:
             logger.exception(
-                "Reaction failed (unsupported chat or missing permission) chat_id=%s chat_type=%s message_id=%s",
+                "Reaction failed (for example, unsupported chat or missing permission) chat_id=%s chat_type=%s message_id=%s",
                 chat.id,
                 chat.type,
                 message.message_id,
