@@ -82,6 +82,17 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             message_id=message.message_id,
         )
 
+        try:
+            await message.set_reaction("👍")
+        except Exception as exc:  # noqa: BLE001
+            logger.exception(
+                "Reaction failed chat_id=%s message_id=%s order_group_id=%s error=%s",
+                chat.id,
+                message.message_id,
+                settings.order_group_id,
+                exc,
+            )
+
         cache.add(key)
         logger.info(
             "Forward successful chat_id=%s message_id=%s -> order_group_id=%s",
