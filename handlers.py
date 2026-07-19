@@ -84,13 +84,12 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
         try:
             await message.set_reaction("👍")
-        except Exception as exc:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             logger.exception(
-                "Reaction failed chat_id=%s chat_type=%s message_id=%s error=%s",
+                "Reaction failed chat_id=%s chat_type=%s message_id=%s",
                 chat.id,
                 chat.type,
                 message.message_id,
-                exc,
             )
 
         cache.add(key)
