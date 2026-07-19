@@ -1,0 +1,27 @@
+"""Keyword list for order detection (case-insensitive matching)."""
+
+KEYWORDS: tuple[str, ...] = (
+    "@gmail.com",
+    "@hotmail.com",
+    "@outlook.com",
+    "@yahoo.com",
+    "@icloud.com",
+    "@proton.me",
+    ".com",
+    ".co",
+    ".net",
+    ".org",
+    ".pk",
+    ".io",
+    ".gg",
+    "facebook",
+    "fb",
+    "email",
+    "mail",
+    "login",
+    "account",
+    "id",
+    "uid",
+    "password",
+    "pass",
+)
