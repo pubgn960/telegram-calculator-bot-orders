@@ -82,6 +82,24 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             message_id=message.message_id,
         )
 
+        try:
+            set_reaction = getattr(message, "set_reaction", None)
+            if callable(set_reaction):
+                await set_reaction("👍")
+            else:
+                logger.warning(
+                    "Reaction unsupported chat_id=%s message_id=%s",
+                    chat.id,
+                    message.message_id,
+                )
+        except Exception as reaction_exc:  # noqa: BLE001
+            logger.warning(
+                "Reaction failed chat_id=%s message_id=%s error=%s",
+                chat.id,
+                message.message_id,
+                reaction_exc,
+            )
+
         cache.add(key)
         logger.info(
             "Forward successful chat_id=%s message_id=%s -> order_group_id=%s",
