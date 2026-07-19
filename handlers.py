@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 cache = ForwardedMessageCache()
 
 
+def _format_local_time(dt: datetime | None = None) -> str:
+    """Format local time as: 19 Jul 2026 • 11:45 PM."""
+    now = dt or datetime.now()
+    return f"{now.strftime('%d %b %Y')} • {now.strftime('%I:%M %p')}"
+
+
 def _build_order_info_message(update: Update) -> str:
     """Build the order information message sent before forwarding."""
     chat = update.effective_chat
@@ -21,17 +27,15 @@ def _build_order_info_message(update: Update) -> str:
     group_title = chat.title if chat and chat.title else "Unknown Group"
     first_name = user.first_name if user and user.first_name else "Unknown"
     username = f"@{user.username}" if user and user.username else ""
-    current_local_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    current_local_time = _format_local_time()
 
-    customer_lines = [first_name]
-    if username:
-        customer_lines.append(username)
+    customer_details = first_name if not username else f"{first_name}\n{username}"
 
     return (
         "📥 NEW ORDER\n\n"
         f"👥 Group: {group_title}\n\n"
         "👤 Customer:\n"
-        f"{"\n".join(customer_lines)}\n\n"
+        f"{customer_details}\n\n"
         f"🕒 {current_local_time}\n\n"
         "━━━━━━━━━━━━━━━━━━━━"
     )
@@ -55,16 +59,14 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         if not matched:
             return
 
+        logger.info("New order detected chat_id=%s message_id=%s", chat.id, message.message_id)
+
         if not any([message.text, message.photo, message.video, message.document, message.caption]):
             return
 
         key = (chat.id, message.message_id)
         if cache.exists(key):
-            logger.info(
-                "Duplicate detected, skipping forward chat_id=%s message_id=%s",
-                chat.id,
-                message.message_id,
-            )
+            logger.info("Duplicate skipped chat_id=%s message_id=%s", chat.id, message.message_id)
             return
 
         info_message = _build_order_info_message(update)
@@ -82,14 +84,14 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
         cache.add(key)
         logger.info(
-            "Forwarded matched message chat_id=%s message_id=%s -> order_group_id=%s",
+            "Forward successful chat_id=%s message_id=%s -> order_group_id=%s",
             chat.id,
             message.message_id,
             settings.order_group_id,
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception(
-            "Failed forwarding order chat_id=%s message_id=%s error=%s",
+            "Forward failed chat_id=%s message_id=%s error=%s",
             chat.id,
             message.message_id,
             exc,
