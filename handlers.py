@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from telegram import Update
+from telegram import ReactionTypeEmoji, Update
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 from config import settings
@@ -14,13 +14,11 @@ cache = ForwardedMessageCache()
 
 
 def _format_local_time(dt: datetime | None = None) -> str:
-    """Format local time as: 19 Jul 2026 • 11:45 PM."""
     now = dt or datetime.now()
     return f"{now.strftime('%d %b %Y')} • {now.strftime('%I:%M %p')}"
 
 
 def _build_order_info_message(update: Update) -> str:
-    """Build the order information message sent before forwarding."""
     chat = update.effective_chat
     user = update.effective_user
 
@@ -42,9 +40,6 @@ def _build_order_info_message(update: Update) -> str:
 
 
 async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """
-    Monitor all incoming group/supergroup messages and forward matched messages.
-    """
     message = update.effective_message
     chat = update.effective_chat
 
@@ -82,6 +77,24 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             message_id=message.message_id,
         )
 
+        # Try to add 👍 reaction if supported by PTB/Bot API
+        try:
+            if hasattr(context.bot, "set_message_reaction"):
+                await context.bot.set_message_reaction(
+                    chat_id=chat.id,
+                    message_id=message.message_id,
+                    reaction=[ReactionTypeEmoji("👍")],
+                )
+                logger.info(
+                    "Reaction added chat_id=%s message_id=%s",
+                    chat.id,
+                    message.message_id,
+                )
+            else:
+                logger.info("Message reactions are not supported by this PTB version.")
+        except Exception as reaction_error:
+            logger.warning("Could not add reaction: %s", reaction_error)
+
         cache.add(key)
         logger.info(
             "Forward successful chat_id=%s message_id=%s -> order_group_id=%s",
@@ -89,7 +102,8 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             message.message_id,
             settings.order_group_id,
         )
-    except Exception as exc:  # noqa: BLE001
+
+    except Exception as exc:
         logger.exception(
             "Forward failed chat_id=%s message_id=%s error=%s",
             chat.id,
@@ -99,7 +113,6 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 def register_handlers(application: Application) -> None:
-    """Register all bot handlers."""
     group_filter = filters.ChatType.GROUPS
     supported_message_filter = (
         filters.TEXT
