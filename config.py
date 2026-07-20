@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def _get_ignored_user_ids() -> tuple[int, ...]:
+def _get_ignored_user_ids() -> frozenset[int]:
     value = os.getenv("IGNORED_USER_IDS", "").strip()
     if not value:
         return ()
@@ -22,7 +22,7 @@ def _get_ignored_user_ids() -> tuple[int, ...]:
     except ValueError as exc:
         raise ValueError("IGNORED_USER_IDS must be a comma-separated list of integers") from exc
 
-    return tuple(ignored_user_ids)
+    return frozenset(ignored_user_ids)
 
 
 @dataclass(frozen=True)
@@ -31,7 +31,7 @@ class Settings:
 
     bot_token: str
     order_group_id: int
-    ignored_user_ids: tuple[int, ...]
+    ignored_user_ids: frozenset[int]
     log_file: str = "logs/bot.log"
 
 
