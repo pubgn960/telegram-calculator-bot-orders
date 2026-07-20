@@ -12,13 +12,17 @@ def _get_ignored_user_ids() -> tuple[int, ...]:
     if not value:
         return ()
 
+    ignored_user_ids: list[int] = []
     try:
-        return tuple(int(user_id.strip()) for user_id in value.split(",") if user_id.strip())
+        for raw_user_id in value.split(","):
+            user_id = raw_user_id.strip()
+            if not user_id:
+                continue
+            ignored_user_ids.append(int(user_id))
     except ValueError as exc:
         raise ValueError("IGNORED_USER_IDS must be a comma-separated list of integers") from exc
 
-
-IGNORED_USER_IDS = _get_ignored_user_ids()
+    return tuple(ignored_user_ids)
 
 
 @dataclass(frozen=True)
@@ -42,5 +46,5 @@ def _get_required_env(name: str) -> str:
 settings = Settings(
     bot_token=_get_required_env("BOT_TOKEN"),
     order_group_id=int(os.getenv("ORDER_GROUP_ID", "-1004406625020")),
-    ignored_user_ids=IGNORED_USER_IDS,
+    ignored_user_ids=_get_ignored_user_ids(),
 )
