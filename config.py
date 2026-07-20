@@ -11,7 +11,19 @@ def _parse_ignored_user_ids() -> frozenset[int]:
     raw = os.getenv("IGNORED_USER_IDS", "").strip()
     if not raw:
         return frozenset()
-    return frozenset(int(uid.strip()) for uid in raw.split(",") if uid.strip())
+    result: set[int] = set()
+    for uid in raw.split(","):
+        uid = uid.strip()
+        if not uid:
+            continue
+        try:
+            result.add(int(uid))
+        except ValueError:
+            import logging as _logging
+            _logging.getLogger(__name__).warning(
+                "IGNORED_USER_IDS: skipping invalid entry %r", uid
+            )
+    return frozenset(result)
 
 
 @dataclass(frozen=True)
