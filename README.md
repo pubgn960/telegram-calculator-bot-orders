@@ -60,6 +60,7 @@ Set:
 
 - `BOT_TOKEN` = your bot token
 - `ORDER_GROUP_ID` = `-1004406625020`
+- `IGNORED_USER_IDS` = optional comma-separated Telegram user IDs, for example `123456789,987654321`
 
 ## Run Locally
 
