@@ -40,6 +40,9 @@ def _build_order_info_message(update: Update) -> str:
 
 
 async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.effective_user and update.effective_user.id in settings.ignored_user_ids:
+        return
+
     message = update.effective_message
     chat = update.effective_chat
 
