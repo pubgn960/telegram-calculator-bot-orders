@@ -10,17 +10,17 @@ load_dotenv()
 def _get_ignored_user_ids() -> frozenset[int]:
     value = os.getenv("IGNORED_USER_IDS", "").strip()
     if not value:
-        return ()
+        return frozenset()
 
     ignored_user_ids: list[int] = []
-    try:
-        for raw_user_id in value.split(","):
-            user_id = raw_user_id.strip()
-            if not user_id:
-                continue
+    for raw_user_id in value.split(","):
+        user_id = raw_user_id.strip()
+        if not user_id:
+            continue
+        try:
             ignored_user_ids.append(int(user_id))
-    except ValueError as exc:
-        raise ValueError("IGNORED_USER_IDS must be a comma-separated list of integers") from exc
+        except ValueError as exc:
+            raise ValueError(f"IGNORED_USER_IDS contains invalid integer: {user_id}") from exc
 
     return frozenset(ignored_user_ids)
 
