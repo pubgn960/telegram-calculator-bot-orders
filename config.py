@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 
 from dotenv import load_dotenv
@@ -14,6 +14,7 @@ class Settings:
     bot_token: str
     order_group_id: int
     log_file: str = "logs/bot.log"
+    ignored_user_ids: set[int] = field(default_factory=set)
 
 
 
@@ -27,4 +28,9 @@ def _get_required_env(name: str) -> str:
 settings = Settings(
     bot_token=_get_required_env("BOT_TOKEN"),
     order_group_id=int(os.getenv("ORDER_GROUP_ID", "-1004406625020")),
+    ignored_user_ids={
+        int(uid.strip())
+        for uid in os.getenv("IGNORED_USER_IDS", "").split(",")
+        if uid.strip()
+    },
 )
