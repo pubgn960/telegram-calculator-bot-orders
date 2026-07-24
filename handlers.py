@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 
 from telegram import ReactionTypeEmoji, Update
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
@@ -11,32 +10,6 @@ from utils import ForwardedMessageCache
 
 logger = logging.getLogger(__name__)
 cache = ForwardedMessageCache()
-
-
-def _format_local_time(dt: datetime | None = None) -> str:
-    now = dt or datetime.now()
-    return f"{now.strftime('%d %b %Y')} • {now.strftime('%I:%M %p')}"
-
-
-def _build_order_info_message(update: Update) -> str:
-    chat = update.effective_chat
-    user = update.effective_user
-
-    group_title = chat.title if chat and chat.title else "Unknown Group"
-    first_name = user.first_name if user and user.first_name else "Unknown"
-    username = f"@{user.username}" if user and user.username else ""
-    current_local_time = _format_local_time()
-
-    customer_details = first_name if not username else f"{first_name}\n{username}"
-
-    return (
-        "📥 NEW ORDER\n\n"
-        f"👥 Group: {group_title}\n\n"
-        "👤 Customer:\n"
-        f"{customer_details}\n\n"
-        f"🕒 {current_local_time}\n\n"
-        "━━━━━━━━━━━━━━━━━━━━"
-    )
 
 
 async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -74,13 +47,6 @@ async def monitor_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         if cache.exists(key):
             logger.info("Duplicate skipped chat_id=%s message_id=%s", chat.id, message.message_id)
             return
-
-        info_message = _build_order_info_message(update)
-
-        await context.bot.send_message(
-            chat_id=settings.order_group_id,
-            text=info_message,
-        )
 
         await context.bot.forward_message(
             chat_id=settings.order_group_id,
